@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>My Saku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════ */
+:root {
+  --font: 'Plus Jakarta Sans', sans-serif;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --transition: 0.25s cubic-bezier(.4,0,.2,1);
+  --max-w: 420px;
+}
+
+/* DARK */
+[data-theme="dark"] {
+  --bg:         #0a0a0a;
+  --bg-card:    #141414;
+  --bg-input:   #1c1c1c;
+  --bg-chip:    #1e1e1e;
+  --border:     rgba(255,255,255,0.07);
+  --border-hi:  rgba(255,255,255,0.18);
+  --text-1:     #f5f5f5;
+  --text-2:     #888;
+  --text-3:     #444;
+  --accent:     #ffffff;
+  --accent-bg:  rgba(255,255,255,0.08);
+  --danger:     #ff4d4d;
+  --danger-bg:  rgba(255,77,77,0.1);
+  --success:    #4dff91;
+  --success-bg: rgba(77,255,145,0.1);
+  --shadow:     0 8px 40px rgba(0,0,0,0.6);
+  --nav-bg:     rgba(10,10,10,0.92);
+}
+
+/* LIGHT */
+[data-theme="light"] {
+  --bg:         #f2f2f7;
+  --bg-card:    #ffffff;
+  --bg-input:   #f2f2f7;
+  --bg-chip:    #e8e8ed;
+  --border:     rgba(0,0,0,0.06);
+  --border-hi:  rgba(0,0,0,0.2);
+  --text-1:     #111111;
+  --text-2:     #666;
+  --text-3:     #bbb;
+  --accent:     #111111;
+  --accent-bg:  rgba(0,0,0,0.06);
+  --danger:     #e03535;
+  --danger-bg:  rgba(224,53,53,0.08);
+  --success:    #1a9c50;
+  --success-bg: rgba(26,156,80,0.08);
+  --shadow:     0 4px 24px rgba(0,0,0,0.1);
+  --nav-bg:     rgba(242,242,247,0.92);
+}
+
+/* ═══════════════════════════════════════════
+   BASE
+═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-1);
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+  transition: background var(--transition), color var(--transition);
+}
+#app {
+  width: 100%;
+  max-width: var(--max-w);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--bg);
+}
+
+/* ═══════════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════════ */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  position: sticky;
+  top: 0;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 100;
+  border-bottom: 1px solid var(--border);
+}
+.topbar-logo {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-1);
+}
+.topbar-logo span { color: var(--text-2); }
+.topbar-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-1);
+  font-size: 18px;
+}
+.icon-btn:hover { background: var(--border-hi); }
+
+/* ═══════════════════════════════════════════
+   SCROLL CONTENT
+═══════════════════════════════════════════ */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 20px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.content::-webkit-scrollbar { display: none; }
+
+/* ═══════════════════════════════════════════
+   BALANCE CARD
+═══════════════════════════════════════════ */
+.balance-card {
+  background: var(--text-1);
+  border-radius: var(--radius-xl);
+  padding: 28px 24px;
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="dark"] .balance-card { background: #1a1a1a; border: 1px solid var(--border-hi); }
+[data-theme="light"] .balance-card { background: #111; }
+
+.balance-card::before {
+  content: '';
+  position: absolute;
+  width: 280px; height: 280px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  top: -80px; right: -80px;
+  pointer-events: none;
+}
+.balance-card::after {
+  content: '';
+  position: absolute;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.03);
+  bottom: -40px; left: -40px;
+  pointer-events: none;
+}
+
+.balance-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 8px;
+}
+.balance-amount {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  line-height: 1;
+  margin-bottom: 4px;
+  transition: var(--transition);
+}
+.balance-amount.negative { color: #ff6b6b; }
+.balance-date {
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 24px;
+}
+
+.balance-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.stat-box {
+  background: rgba(255,255,255,0.06);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.stat-box-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.stat-box-val {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+.stat-box-val.in { color: #4dff91; }
+.stat-box-val.out { color: #ff6b6b; }
+
+/* ═══════════════════════════════════════════
+   QUICK ADD SAKU
+═══════════════════════════════════════════ */
+.section-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.saku-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.amount-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0 16px;
+  gap: 8px;
+  transition: border-color var(--transition);
+}
+.amount-input-wrap:focus-within { border-color: var(--border-hi); }
+.amount-prefix {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.amount-input-wrap input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+  padding: 16px 0;
+  min-width: 0;
+}
+.amount-input-wrap input::placeholder { color: var(--text-3); font-weight: 500; font-size: 15px; }
+
+.btn-add-saku {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  background: var(--text-1);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 26px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-add-saku:hover { opacity: 0.85; transform: translateY(-1px); }
+.btn-add-saku:active { transform: translateY(0); }
+
+/* ═══════════════════════════════════════════
+   ADD EXPENSE
+═══════════════════════════════════════════ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+}
+
+.expense-form { display: flex; flex-direction: column; gap: 12px; }
+
+.input-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px 16px;
+  transition: border-color var(--transition);
+}
+.input-field:focus-within { border-color: var(--border-hi); }
+.input-field i { color: var(--text-2); font-size: 18px; flex-shrink: 0; }
+.input-field input, .input-field select {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-1);
+  min-width: 0;
+}
+.input-field input::placeholder { color: var(--text-3); }
+.input-field select option { background: var(--bg-card); }
+
+/* Category chips */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  padding: 7px 14px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--bg-chip);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex; align-items: center; gap: 5px;
+  white-space: nowrap;
+}
+.chip:hover { border-color: var(--border-hi); color: var(--text-1); }
+.chip.active {
+  background: var(--text-1);
+  color: var(--bg);
+  border-color: var(--text-1);
+}
+
+.btn-expense {
+  width: 100%;
+  padding: 15px;
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-expense:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-expense:active { transform: translateY(0); }
+
+/* ═══════════════════════════════════════════
+   CHART
+═══════════════════════════════════════════ */
+.chart-wrap {
+  position: relative;
+  height: 180px;
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════════ */
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+.btn-clear {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: var(--transition);
+}
+.btn-clear:hover { background: var(--danger-bg); }
+
+.tx-list { display: flex; flex-direction: column; gap: 1px; }
+
+.tx-empty {
+  text-align: center;
+  padding: 32px 0;
+  color: var(--text-3);
+  font-size: 13px;
+}
+.tx-empty i { font-size: 36px; display: block; margin-bottom: 8px; }
+
+.tx-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+  animation: fadeSlide 0.3s ease;
+}
+.tx-item:last-child { border-bottom: none; }
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tx-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.tx-icon.income { background: var(--success-bg); color: var(--success); }
+.tx-icon.expense { background: var(--danger-bg); color: var(--danger); }
+
+.tx-info { flex: 1; min-width: 0; }
+.tx-desc {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tx-meta {
+  font-size: 11px;
+  color: var(--text-2);
+  margin-top: 2px;
+  display: flex; gap: 6px; align-items: center;
+}
+.tx-cat {
+  background: var(--bg-chip);
+  border-radius: 6px;
+  padding: 1px 7px;
+  font-weight: 600;
+}
+
+.tx-amount {
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.tx-amount.income { color: var(--success); }
+.tx-amount.expense { color: var(--danger); }
+
+/* ═══════════════════════════════════════════
+   CATEGORY SUMMARY
+═══════════════════════════════════════════ */
+.cat-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cat-row:last-child { border-bottom: none; }
+.cat-icon {
+  font-size: 20px;
+  width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.cat-info { flex: 1; }
+.cat-name { font-size: 13px; font-weight: 600; color: var(--text-1); }
+.cat-bar-wrap {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 5px;
+  overflow: hidden;
+}
+.cat-bar {
+  height: 100%;
+  background: var(--danger);
+  border-radius: 2px;
+  transition: width 0.8s cubic-bezier(.4,0,.2,1);
+}
+.cat-amount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════════════ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--max-w);
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding: 6px 0 24px;
+  z-index: 100;
+}
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  background: none;
+  color: var(--text-3);
+  font-family: var(--font);
+  position: relative;
+}
+.nav-tab i { font-size: 26px; transition: var(--transition); }
+.nav-tab.active { color: var(--text-1); }
+.nav-tab.active i { transform: scale(1.15); }
+.nav-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--text-1);
+}
+
+/* ═══════════════════════════════════════════
+   PAGES (show/hide)
+═══════════════════════════════════════════ */
+.page { display: none; flex-direction: column; gap: 16px; }
+.page.active { display: flex; }
+
+/* ═══════════════════════════════════════════
+   SETTINGS PAGE
+═══════════════════════════════════════════ */
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.settings-item:last-child { border-bottom: none; }
+.settings-left { display: flex; align-items: center; gap: 14px; }
+.settings-icon {
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  background: var(--accent-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  color: var(--text-1);
+}
+.settings-label { font-size: 14px; font-weight: 600; color: var(--text-1); }
+.settings-sub { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+
+/* Toggle switch */
+.toggle {
+  width: 46px; height: 26px;
+  background: var(--border-hi);
+  border-radius: 13px;
+  position: relative;
+  cursor: pointer;
+  transition: background var(--transition);
+  flex-shrink: 0;
+}
+.toggle.on { background: var(--text-1); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--bg);
+  top: 3px; left: 3px;
+  transition: transform var(--transition);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.toggle.on::after { transform: translateX(20px); }
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+#toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text-1);
+  color: var(--bg);
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 999;
+  white-space: nowrap;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ═══════════════════════════════════════════
+   RESET MODAL
+═══════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-sheet {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: 24px 24px 40px;
+  width: 100%;
+  max-width: var(--max-w);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  transform: translateY(40px);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+}
+.modal-overlay.open .modal-sheet { transform: translateY(0); }
+.modal-handle {
+  width: 36px; height: 4px;
+  background: var(--border-hi);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+.modal-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+.modal-sub { font-size: 14px; color: var(--text-2); margin-bottom: 24px; line-height: 1.6; }
+.modal-actions { display: flex; gap: 10px; }
+.btn-modal {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+}
+.btn-modal-cancel { background: var(--accent-bg); color: var(--text-1); }
+.btn-modal-cancel:hover { background: var(--border); }
+.btn-modal-danger { background: var(--danger); color: #fff; }
+.btn-modal-danger:hover { opacity: 0.88; }
+
+/* ═══════════════════════════════════════════
+   MISC
+═══════════════════════════════════════════ */
+.divider-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.divider-label::before, .divider-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+@media (min-width: 421px) {
+  body { background: var(--bg-input); }
+  #app { box-shadow: var(--shadow); }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── TOPBAR ── -->
+  <div class="topbar">
+    <div class="topbar-logo">My<span>Saku</span></div>
+    <div class="topbar-actions">
+      <button class="icon-btn" onclick="openResetModal()" title="Reset harian">
+        <i class="ph ph-arrows-clockwise"></i>
+      </button>
+      <button class="icon-btn" onclick="goTo('settings')" title="Pengaturan">
+        <i class="ph ph-gear-six"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── CONTENT ── -->
+  <div class="content">
+
+    <!-- PAGE: HOME -->
+    <div class="page active" id="page-home">
+
+      <!-- Balance Card -->
+      <div class="balance-card">
+        <div class="balance-label">Saldo Hari Ini</div>
+        <div class="balance-amount" id="balanceDisplay">Rp 0</div>
+        <div class="balance-date" id="balanceDate"></div>
+        <div class="balance-stats">
+          <div class="stat-box">
+            <div class="stat-box-label">💰 Uang Saku</div>
+            <div class="stat-box-val in" id="statIncome">Rp 0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">🛒 Pengeluaran</div>
+            <div class="stat-box-val out" id="statExpense">Rp 0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Saku -->
+      <div>
+        <div class="section-label" style="margin-bottom:10px;">Tambah Uang Saku</div>
+        <div class="saku-input-row">
+          <div class="amount-input-wrap">
+            <span class="amount-prefix">Rp</span>
+            <input type="number" id="sakuInput" placeholder="0" min="0" inputmode="numeric"/>
+          </div>
+          <button class="btn-add-saku" onclick="addSaku()" title="Tambah Saku">
+            <i class="ph ph-plus"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Add Expense -->
+      <div class="card">
+        <div class="section-label" style="margin-bottom:12px;">Catat Pengeluaran</div>
+        <div class="expense-form">
+          <!-- Nominal -->
+          <div class="amount-input-wrap" style="border-radius:12px;">
+            <span class="amount-prefix">Rp</span>
+            <input type="number" id="expInput" placeholder="Nominal" min="0" inputmode="numeric"/>
+          </div>
+          <!-- Deskripsi -->
+          <div class="input-field">
+            <i class="ph ph-pencil-simple"></i>
+            <input type="text" id="expDesc" placeholder="Keterangan (contoh: makan siang)" maxlength="40"/>
+          </div>
+          <!-- Kategori chips -->
+          <div class="chips" id="catChips"></div>
+          <!-- Submit -->
+          <button class="btn-expense" onclick="addExpense()">
+            <i class="ph ph-minus-circle"></i> Pengeluaran
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PAGE: HISTORY -->
+    <div class="page" id="page-history">
+      <div class="history-header">
+        <div class="section-label">Riwayat Transaksi</div>
+        <button class="btn-clear" onclick="clearHistory()">Hapus Semua</button>
+      </div>
+      <div class="card">
+        <div class="tx-list" id="txList">
+          <div class="tx-empty">
+            <i class="ph ph-receipt"></i>
+            Belum ada transaksi hari ini
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: CHART -->
+    <div class="page" id="page-chart">
+      <div class="section-label">Grafik Pengeluaran</div>
+
+      <!-- Donut chart -->
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:12px;">Distribusi Per Kategori</div>
+        <div class="chart-wrap">
+          <canvas id="donutChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Bar chart 7 hari -->
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:12px;">Tren Pengeluaran 7 Hari</div>
+        <div class="chart-wrap">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Category breakdown -->
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:12px;">Rincian Kategori</div>
+        <div id="catBreakdown"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="section-label">Pengaturan</div>
+      <div class="card">
+
+        <!-- Dark mode toggle -->
+        <div class="settings-item" onclick="toggleTheme()">
+          <div class="settings-left">
+            <div class="settings-icon"><i class="ph ph-moon"></i></div>
+            <div>
+              <div class="settings-label">Mode Gelap</div>
+              <div class="settings-sub">Ganti tampilan terang/gelap</div>
+            </div>
+          </div>
+          <div class="toggle" id="themeToggle"></div>
+        </div>
+
+        <!-- Auto reset -->
+        <div class="settings-item" onclick="toggleAutoReset()">
+          <div class="settings-left">
+            <div class="settings-icon"><i class="ph ph-arrows-clockwise"></i></div>
+            <div>
+              <div class="settings-label">Reset Otomatis</div>
+              <div class="settings-sub">Saldo & catatan direset setiap hari baru</div>
+            </div>
+          </div>
+          <div class="toggle" id="autoResetToggle"></div>
+        </div>
+
+        <!-- Export CSV -->
+        <div class="settings-item" onclick="exportCSV()">
+          <div class="settings-left">
+            <div class="settings-icon"><i class="ph ph-upload-simple"></i></div>
+            <div>
+              <div class="settings-label">Ekspor Riwayat</div>
+              <div class="settings-sub">Unduh catatan sebagai file CSV</div>
+            </div>
+          </div>
+          <i class="ph ph-caret-right" style="color:var(--text-3)"></i>
+        </div>
+
+        <!-- Reset manual -->
+        <div class="settings-item" onclick="openResetModal()" style="border-bottom:none;">
+          <div class="settings-left">
+            <div class="settings-icon" style="background:var(--danger-bg);color:var(--danger)">
+              <i class="ph ph-trash"></i>
+            </div>
+            <div>
+              <div class="settings-label" style="color:var(--danger)">Reset Saldo Hari Ini</div>
+              <div class="settings-sub">Hapus semua data hari ini</div>
+            </div>
+          </div>
+          <i class="ph ph-caret-right" style="color:var(--text-3)"></i>
+        </div>
+
+      </div>
+
+      <!-- App info -->
+      <div style="text-align:center;padding:8px 0;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-1);">My Saku</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:4px;">v1.0 · Catat sakumu, kelola hidupmu 🎒</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- ── BOTTOM NAV ── -->
+  <div class="bottom-nav">
+    <button class="nav-tab active" id="tab-home" onclick="goTo('home')" title="Beranda">
+      <i class="ph ph-house-simple"></i>
+    </button>
+    <button class="nav-tab" id="tab-history" onclick="goTo('history')" title="Riwayat">
+      <i class="ph ph-clock-clockwise"></i>
+    </button>
+    <button class="nav-tab" id="tab-chart" onclick="goTo('chart')" title="Grafik">
+      <i class="ph ph-chart-pie-slice"></i>
+    </button>
+    <button class="nav-tab" id="tab-settings" onclick="goTo('settings')" title="Pengaturan">
+      <i class="ph ph-gear-six"></i>
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Reset Modal -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Reset Saldo Hari Ini?</div>
+    <div class="modal-sub">Semua data hari ini (saldo, pengeluaran, riwayat) akan dihapus permanen dan tidak bisa dikembalikan.</div>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" onclick="closeResetModal()">Batal</button>
+      <button class="btn-modal btn-modal-danger" onclick="confirmReset()">Ya, Reset</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   STATE & STORAGE
+═══════════════════════════════════════════ */
+const STORAGE_KEY = 'mysaku_v1';
+const TODAY = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+const TODAY_KEY = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+const CATEGORIES = [
+  { id: 'makan',     label: 'Makan',      icon: '🍜' },
+  { id: 'minum',     label: 'Minum',      icon: '🧋' },
+  { id: 'transport', label: 'Transport',  icon: '🚌' },
+  { id: 'jajan',     label: 'Jajan',      icon: '🍡' },
+  { id: 'hiburan',   label: 'Hiburan',    icon: '🎮' },
+  { id: 'lainnya',   label: 'Lainnya',    icon: '📦' },
+];
+
+let state = loadState();
+let selectedCat = 'makan';
+let donutChart = null;
+let barChart = null;
+
+function defaultState() {
+  return {
+    date: TODAY_KEY,
+    income: 0,
+    expense: 0,
+    transactions: [],
+    settings: { theme: 'dark', autoReset: true },
+    history7: [] // [{date, expense}] last 7 days
+  };
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    const saved = JSON.parse(raw);
+
+    // Auto-reset jika hari baru & autoReset aktif
+    if (saved.settings?.autoReset && saved.date !== TODAY_KEY) {
+      // Simpan hari kemarin ke history7
+      const h7 = saved.history7 || [];
+      h7.push({ date: saved.date, expense: saved.expense });
+      if (h7.length > 7) h7.shift();
+      const fresh = defaultState();
+      fresh.settings = saved.settings;
+      fresh.history7 = h7;
+      return fresh;
+    }
+    return saved;
+  } catch { return defaultState(); }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+function init() {
+  applyTheme(state.settings.theme);
+  renderCategoryChips();
+  renderBalance();
+  renderHistory();
+  renderSettings();
+  document.getElementById('balanceDate').textContent = TODAY;
+}
+
+/* ═══════════════════════════════════════════
+   THEME
+═══════════════════════════════════════════ */
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const toggle = document.getElementById('themeToggle');
+  toggle.classList.toggle('on', theme === 'dark');
+}
+
+function toggleTheme() {
+  state.settings.theme = state.settings.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(state.settings.theme);
+  saveState();
+  // Re-render charts with new theme
+  if (document.getElementById('page-chart').classList.contains('active')) {
+    renderCharts();
+  }
+}
+
+function toggleAutoReset() {
+  state.settings.autoReset = !state.settings.autoReset;
+  renderSettings();
+  saveState();
+  toast(state.settings.autoReset ? 'Reset otomatis aktif' : 'Reset otomatis nonaktif');
+}
+
+/* ═══════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════ */
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('tab-' + page).classList.add('active');
+
+  if (page === 'chart') {
+    setTimeout(renderCharts, 80);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   BALANCE & SAKU
+═══════════════════════════════════════════ */
+function addSaku() {
+  const val = parseFloat(document.getElementById('sakuInput').value);
+  if (!val || val <= 0) { toast('Masukkan nominal yang valid'); return; }
+
+  state.income += val;
+  state.transactions.unshift({
+    id: Date.now(),
+    type: 'income',
+    amount: val,
+    desc: 'Uang Saku',
+    cat: null,
+    time: nowTime()
+  });
+  document.getElementById('sakuInput').value = '';
+  saveState();
+  renderBalance();
+  renderHistory();
+  toast('+ ' + rupiah(val) + ' ditambahkan 💰');
+}
+
+function renderBalance() {
+  const saldo = state.income - state.expense;
+  const el = document.getElementById('balanceDisplay');
+  el.textContent = rupiah(saldo);
+  el.className = 'balance-amount' + (saldo < 0 ? ' negative' : '');
+  document.getElementById('statIncome').textContent = rupiah(state.income);
+  document.getElementById('statExpense').textContent = rupiah(state.expense);
+}
+
+/* ═══════════════════════════════════════════
+   EXPENSE
+═══════════════════════════════════════════ */
+function renderCategoryChips() {
+  const wrap = document.getElementById('catChips');
+  wrap.innerHTML = CATEGORIES.map(c =>
+    `<div class="chip ${c.id === selectedCat ? 'active' : ''}" onclick="selectCat('${c.id}')">
+      ${c.icon} ${c.label}
+    </div>`
+  ).join('');
+}
+
+function selectCat(id) {
+  selectedCat = id;
+  renderCategoryChips();
+}
+
+function addExpense() {
+  const amount = parseFloat(document.getElementById('expInput').value);
+  const desc   = document.getElementById('expDesc').value.trim();
+  if (!amount || amount <= 0) { toast('Masukkan nominal pengeluaran'); return; }
+  if (!desc) { toast('Tambahkan keterangan'); return; }
+
+  const saldo = state.income - state.expense;
+  if (amount > saldo) {
+    toast('⚠️ Saldo tidak cukup!');
+  }
+
+  state.expense += amount;
+  state.transactions.unshift({
+    id: Date.now(),
+    type: 'expense',
+    amount,
+    desc,
+    cat: selectedCat,
+    time: nowTime()
+  });
+
+  document.getElementById('expInput').value = '';
+  document.getElementById('expDesc').value = '';
+  saveState();
+  renderBalance();
+  renderHistory();
+
+  const cat = CATEGORIES.find(c => c.id === selectedCat);
+  toast(`${cat.icon} -${rupiah(amount)} dicatat`);
+}
+
+/* ═══════════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════════ */
+function renderHistory() {
+  const list = document.getElementById('txList');
+  if (!state.transactions.length) {
+    list.innerHTML = `<div class="tx-empty"><i class="ph ph-receipt"></i>Belum ada transaksi hari ini</div>`;
+    return;
+  }
+
+  list.innerHTML = state.transactions.map(tx => {
+    const isIncome = tx.type === 'income';
+    const cat = tx.cat ? CATEGORIES.find(c => c.id === tx.cat) : null;
+    return `
+      <div class="tx-item">
+        <div class="tx-icon ${tx.type}">
+          <i class="ph ph-${isIncome ? 'arrow-down-left' : 'arrow-up-right'}"></i>
+        </div>
+        <div class="tx-info">
+          <div class="tx-desc">${tx.desc}</div>
+          <div class="tx-meta">
+            <span>${tx.time}</span>
+            ${cat ? `<span class="tx-cat">${cat.icon} ${cat.label}</span>` : ''}
+          </div>
+        </div>
+        <div class="tx-amount ${tx.type}">
+          ${isIncome ? '+' : '-'}${rupiah(tx.amount)}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function clearHistory() {
+  if (!state.transactions.length) { toast('Riwayat sudah kosong'); return; }
+  state.transactions = [];
+  state.income = 0;
+  state.expense = 0;
+  saveState();
+  renderBalance();
+  renderHistory();
+  toast('Riwayat dihapus');
+}
+
+/* ═══════════════════════════════════════════
+   CHARTS
+═══════════════════════════════════════════ */
+function getChartColors() {
+  const isDark = state.settings.theme === 'dark';
+  return {
+    grid: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+    text: isDark ? '#888' : '#666',
+    bar:  isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
+    barHover: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)',
+  };
+}
+
+function renderCharts() {
+  renderDonut();
+  renderBar();
+  renderCatBreakdown();
+}
+
+function renderDonut() {
+  const ctx = document.getElementById('donutChart').getContext('2d');
+  const expenses = state.transactions.filter(t => t.type === 'expense');
+
+  // Group by category
+  const bycat = {};
+  CATEGORIES.forEach(c => { bycat[c.id] = 0; });
+  expenses.forEach(t => { if (t.cat) bycat[t.cat] += t.amount; });
+
+  const labels = CATEGORIES.filter(c => bycat[c.id] > 0).map(c => `${c.icon} ${c.label}`);
+  const data   = CATEGORIES.filter(c => bycat[c.id] > 0).map(c => bycat[c.id]);
+  const isDark = state.settings.theme === 'dark';
+
+  const grays = ['#ffffff','#cccccc','#999999','#666666','#444444','#222222'];
+
+  if (donutChart) donutChart.destroy();
+
+  if (!data.length) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillStyle = isDark ? '#444' : '#ccc';
+    ctx.font = '13px Plus Jakarta Sans';
+    ctx.textAlign = 'center';
+    ctx.fillText('Belum ada pengeluaran', ctx.canvas.width / 2, ctx.canvas.height / 2);
+    return;
+  }
+
+  donutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: grays, borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: {
+      cutout: '68%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: isDark ? '#888' : '#666',
+            font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' },
+            padding: 14,
+            boxWidth: 10, boxHeight: 10,
+            borderRadius: 3,
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${rupiah(ctx.parsed)}`
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderBar() {
+  const ctx = document.getElementById('barChart').getContext('2d');
+  const c = getChartColors();
+  const isDark = state.settings.theme === 'dark';
+
+  // Build last 7 days labels & values
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push({
+      key: d.toISOString().slice(0, 10),
+      label: d.toLocaleDateString('id-ID', { weekday: 'short' })
+    });
+  }
+
+  const vals = days.map(d => {
+    if (d.key === TODAY_KEY) return state.expense;
+    const h = state.history7.find(h => h.date === d.key);
+    return h ? h.expense : 0;
+  });
+
+  if (barChart) barChart.destroy();
+
+  barChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: days.map(d => d.label),
+      datasets: [{
+        data: vals,
+        backgroundColor: vals.map((_, i) =>
+          i === 6 ? (isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)') : c.bar
+        ),
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ` ${rupiah(ctx.parsed.y)}` }
+      }},
+      scales: {
+        y: {
+          grid: { color: c.grid },
+          ticks: { color: c.text, font: { family: 'Plus Jakarta Sans', size: 11 },
+            callback: v => v === 0 ? '0' : (v >= 1000 ? (v/1000).toFixed(0)+'k' : v)
+          },
+          border: { display: false }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { color: c.text, font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function renderCatBreakdown() {
+  const wrap = document.getElementById('catBreakdown');
+  const expenses = state.transactions.filter(t => t.type === 'expense');
+  const total = state.expense || 1;
+
+  const bycat = {};
+  CATEGORIES.forEach(c => { bycat[c.id] = 0; });
+  expenses.forEach(t => { if (t.cat) bycat[t.cat] += t.amount; });
+
+  const items = CATEGORIES.filter(c => bycat[c.id] > 0)
+    .sort((a, b) => bycat[b.id] - bycat[a.id]);
+
+  if (!items.length) {
+    wrap.innerHTML = `<div class="tx-empty" style="padding:20px 0;"><i class="ph ph-chart-bar"></i>Belum ada data kategori</div>`;
+    return;
+  }
+
+  wrap.innerHTML = items.map(c => {
+    const pct = Math.round((bycat[c.id] / total) * 100);
+    return `
+      <div class="cat-row">
+        <div class="cat-icon">${c.icon}</div>
+        <div class="cat-info">
+          <div class="cat-name">${c.label}</div>
+          <div class="cat-bar-wrap">
+            <div class="cat-bar" style="width:${pct}%"></div>
+          </div>
+        </div>
+        <div class="cat-amount">${rupiah(bycat[c.id])}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Trigger bar animation
+  requestAnimationFrame(() => {
+    wrap.querySelectorAll('.cat-bar').forEach(b => {
+      const w = b.style.width;
+      b.style.width = '0';
+      requestAnimationFrame(() => { b.style.width = w; });
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════
+   SETTINGS RENDER
+═══════════════════════════════════════════ */
+function renderSettings() {
+  const arToggle = document.getElementById('autoResetToggle');
+  arToggle.classList.toggle('on', state.settings.autoReset);
+}
+
+/* ═══════════════════════════════════════════
+   RESET MODAL
+═══════════════════════════════════════════ */
+function openResetModal() {
+  document.getElementById('resetModal').classList.add('open');
+}
+function closeResetModal() {
+  document.getElementById('resetModal').classList.remove('open');
+}
+function confirmReset() {
+  const h7 = state.history7 || [];
+  h7.push({ date: state.date, expense: state.expense });
+  if (h7.length > 7) h7.shift();
+
+  const settings = state.settings;
+  state = defaultState();
+  state.settings = settings;
+  state.history7 = h7;
+  saveState();
+
+  closeResetModal();
+  renderBalance();
+  renderHistory();
+  toast('Saldo direset ✓');
+}
+
+/* ═══════════════════════════════════════════
+   EXPORT CSV
+═══════════════════════════════════════════ */
+function exportCSV() {
+  if (!state.transactions.length) { toast('Tidak ada data untuk diekspor'); return; }
+  const rows = [['Waktu','Tipe','Deskripsi','Kategori','Nominal']];
+  state.transactions.forEach(t => {
+    const cat = t.cat ? CATEGORIES.find(c => c.id === t.cat)?.label : '-';
+    rows.push([t.time, t.type === 'income' ? 'Pemasukan' : 'Pengeluaran', t.desc, cat || '-', t.amount]);
+  });
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mysaku_${TODAY_KEY}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('File CSV diunduh ✓');
+}
+
+/* ═══════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════ */
+function rupiah(n) {
+  return 'Rp ' + Math.abs(Math.round(n)).toLocaleString('id-ID');
+}
+
+function nowTime() {
+  return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+}
+
+let toastTimeout;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+/* ═══════════════════════════════════════════
+   ENTER KEY SUPPORT
+═══════════════════════════════════════════ */
+document.getElementById('sakuInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addSaku();
+});
+document.getElementById('expDesc').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addExpense();
+});
+
+/* ═══════════════════════════════════════════
+   CLOSE MODAL ON OVERLAY CLICK
+═══════════════════════════════════════════ */
+document.getElementById('resetModal').addEventListener('click', function(e) {
+  if (e.target === this) closeResetModal();
+});
+
+// BOOT
+init();
+</script>
+</body>
+</html>
