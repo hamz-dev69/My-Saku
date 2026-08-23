@@ -699,6 +699,106 @@ body {
   background: var(--border);
 }
 
+/* ═══════════════════════════════════════════
+   MODE TABS (Harian/Mingguan/Bulanan)
+═══════════════════════════════════════════ */
+.mode-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 4px;
+}
+.mode-tab {
+  flex: 1;
+  text-align: center;
+  padding: 9px 0;
+  border-radius: 9999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-2);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: var(--font);
+  transition: var(--transition);
+}
+.mode-tab.active {
+  background: var(--text-1);
+  color: var(--bg);
+}
+
+/* ═══════════════════════════════════════════
+   MORE MENU (3-dot dropdown)
+═══════════════════════════════════════════ */
+.more-menu-wrap { position: relative; }
+.dropdown-menu {
+  position: absolute;
+  top: 46px;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  min-width: 220px;
+  padding: 6px;
+  z-index: 150;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.dropdown-menu.open { opacity: 1; transform: translateY(0); pointer-events: all; }
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-1);
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.dropdown-item:hover { background: var(--accent-bg); }
+.dropdown-item i { font-size: 17px; color: var(--text-2); }
+
+/* ═══════════════════════════════════════════
+   INLINE SETTINGS INPUT (nominal harian)
+═══════════════════════════════════════════ */
+.settings-subpanel {
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.settings-subpanel .amount-input-wrap { border-radius: 12px; }
+.settings-subpanel .btn-mini {
+  padding: 12px;
+  background: var(--accent-bg);
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.settings-subpanel .btn-mini:hover { border-color: var(--border-hi); }
+.settings-pool-readout {
+  font-size: 12px;
+  color: var(--text-2);
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.settings-pool-readout b { color: var(--text-1); font-size: 13px; }
+
 @media (min-width: 421px) {
   body { background: var(--bg-input); }
   #app { box-shadow: var(--shadow); }
@@ -712,9 +812,20 @@ body {
   <div class="topbar">
     <div class="topbar-logo">My<span>Saku</span></div>
     <div class="topbar-actions">
-      <button class="icon-btn" onclick="openResetModal()" title="Reset harian">
+      <button class="icon-btn" onclick="openResetModal()" title="Reset">
         <i class="ph ph-arrows-clockwise"></i>
       </button>
+      <div class="more-menu-wrap">
+        <button class="icon-btn" onclick="toggleMoreMenu()" title="Lainnya">
+          <i class="ph ph-dots-three-vertical"></i>
+        </button>
+        <div class="dropdown-menu" id="moreMenu">
+          <div class="dropdown-item" onclick="toggleModeTabsVisibility()">
+            <i class="ph ph-eye"></i>
+            <span id="modeTabsMenuLabel">Sembunyikan Tab Periode</span>
+          </div>
+        </div>
+      </div>
       <button class="icon-btn" onclick="goTo('settings')" title="Pengaturan">
         <i class="ph ph-gear-six"></i>
       </button>
@@ -727,9 +838,16 @@ body {
     <!-- PAGE: HOME -->
     <div class="page active" id="page-home">
 
+      <!-- Mode Tabs -->
+      <div class="mode-tabs" id="modeTabs">
+        <button class="mode-tab active" data-mode="harian" onclick="setMode('harian')">Harian</button>
+        <button class="mode-tab" data-mode="mingguan" onclick="setMode('mingguan')">Mingguan</button>
+        <button class="mode-tab" data-mode="bulanan" onclick="setMode('bulanan')">Bulanan</button>
+      </div>
+
       <!-- Balance Card -->
       <div class="balance-card">
-        <div class="balance-label">Saldo Hari Ini</div>
+        <div class="balance-label" id="balanceLabel">Saldo Hari Ini</div>
         <div class="balance-amount" id="balanceDisplay">Rp 0</div>
         <div class="balance-date" id="balanceDate"></div>
         <div class="balance-stats">
@@ -746,11 +864,11 @@ body {
 
       <!-- Add Saku -->
       <div>
-        <div class="section-label" style="margin-bottom:10px;">Tambah Uang Saku</div>
+        <div class="section-label" style="margin-bottom:10px;" id="addSakuLabel">Tambah Uang Saku</div>
         <div class="saku-input-row">
           <div class="amount-input-wrap">
             <span class="amount-prefix">Rp</span>
-            <input type="number" id="sakuInput" placeholder="0" min="0" inputmode="numeric"/>
+            <input type="text" id="sakuInput" placeholder="0" inputmode="numeric" autocomplete="off"/>
           </div>
           <button class="btn-add-saku" onclick="addSaku()" title="Tambah Saku">
             <i class="ph ph-plus"></i>
@@ -765,7 +883,7 @@ body {
           <!-- Nominal -->
           <div class="amount-input-wrap" style="border-radius:12px;">
             <span class="amount-prefix">Rp</span>
-            <input type="number" id="expInput" placeholder="Nominal" min="0" inputmode="numeric"/>
+            <input type="text" id="expInput" placeholder="0" inputmode="numeric" autocomplete="off"/>
           </div>
           <!-- Deskripsi -->
           <div class="input-field">
@@ -855,6 +973,33 @@ body {
           <div class="toggle" id="autoResetToggle"></div>
         </div>
 
+        <!-- Auto allowance -->
+        <div class="settings-item" onclick="toggleAutoAllowance()">
+          <div class="settings-left">
+            <div class="settings-icon"><i class="ph ph-coin"></i></div>
+            <div>
+              <div class="settings-label">Isi Otomatis Saku Harian</div>
+              <div class="settings-sub">Ambil dari saldo Bulanan tiap hari, sisa dikembalikan</div>
+            </div>
+          </div>
+          <div class="toggle" id="autoAllowanceToggle"></div>
+        </div>
+
+        <!-- Nominal harian (only shown when autoAllowance is on) -->
+        <div class="settings-subpanel" id="dailyAmountPanel" style="display:none;padding-top:14px;">
+          <div class="settings-sub" style="margin:0 0 2px;">Nominal saku harian otomatis</div>
+          <div class="saku-input-row">
+            <div class="amount-input-wrap" style="border-radius:12px;">
+              <span class="amount-prefix">Rp</span>
+              <input type="text" id="dailyAmountInput" placeholder="100.000" inputmode="numeric" autocomplete="off"/>
+            </div>
+            <button class="btn-mini" onclick="setDailyAmount()">Simpan</button>
+          </div>
+          <div class="settings-pool-readout">
+            Sisa saldo Bulanan (sumber saku harian): <b id="poolReadout">Rp 0</b>
+          </div>
+        </div>
+
         <!-- Export CSV -->
         <div class="settings-item" onclick="exportCSV()">
           <div class="settings-left">
@@ -930,9 +1075,8 @@ body {
 /* ═══════════════════════════════════════════
    STATE & STORAGE
 ═══════════════════════════════════════════ */
-const STORAGE_KEY = 'mysaku_v1';
+const STORAGE_KEY = 'mysaku_v2';
 const TODAY = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-const TODAY_KEY = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
 const CATEGORIES = [
   { id: 'makan',     label: 'Makan',      icon: '🍜' },
@@ -943,6 +1087,31 @@ const CATEGORIES = [
   { id: 'lainnya',   label: 'Lainnya',    icon: '📦' },
 ];
 
+const MODE_LABELS = {
+  harian:   { balance: 'Saldo Hari Ini',    add: 'Tambah Uang Saku (Harian)',  reset: 'hari ini' },
+  mingguan: { balance: 'Saldo Minggu Ini',  add: 'Tambah Uang Saku (Mingguan)', reset: 'minggu ini' },
+  bulanan:  { balance: 'Saldo Bulan Ini',   add: 'Tambah Uang Saku (Bulanan)',  reset: 'bulan ini' },
+};
+
+/* ── date-key helpers (pakai waktu lokal, bukan UTC) ── */
+function pad2(n) { return String(n).padStart(2, '0'); }
+function getDailyKey(d = new Date()) {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+function getMonthKey(d = new Date()) {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+}
+function getWeekKey(d = new Date()) {
+  const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = (dt.getUTCDay() + 6) % 7;
+  dt.setUTCDate(dt.getUTCDate() - dayNum + 3);
+  const firstThursday = new Date(Date.UTC(dt.getUTCFullYear(), 0, 4));
+  const diff = dt - firstThursday;
+  const week = 1 + Math.round(diff / (7 * 24 * 3600 * 1000));
+  return `${dt.getUTCFullYear()}-W${pad2(week)}`;
+}
+const TODAY_KEY = getDailyKey();
+
 let state = loadState();
 let selectedCat = 'makan';
 let donutChart = null;
@@ -950,32 +1119,38 @@ let barChart = null;
 
 function defaultState() {
   return {
-    date: TODAY_KEY,
-    income: 0,
-    expense: 0,
-    transactions: [],
-    settings: { theme: 'dark', autoReset: true },
-    history7: [] // [{date, expense}] last 7 days
+    mode: 'harian',
+    periods: {
+      harian:   { key: getDailyKey(),  income: 0, expense: 0 },
+      mingguan: { key: getWeekKey(),   income: 0, expense: 0 },
+      bulanan:  { key: getMonthKey(),  income: 0, expense: 0 },
+    },
+    transactions: [], // {id,type,amount,desc,cat,time,dateKey,mode,periodKey}
+    settings: {
+      theme: 'dark',
+      autoReset: true,
+      autoAllowance: false,
+      dailyAmount: 100000,
+      showModeTabs: true,
+    },
   };
 }
 
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultState();
-    const saved = JSON.parse(raw);
-
-    // Auto-reset jika hari baru & autoReset aktif
-    if (saved.settings?.autoReset && saved.date !== TODAY_KEY) {
-      // Simpan hari kemarin ke history7
-      const h7 = saved.history7 || [];
-      h7.push({ date: saved.date, expense: saved.expense });
-      if (h7.length > 7) h7.shift();
+    if (!raw) {
       const fresh = defaultState();
-      fresh.settings = saved.settings;
-      fresh.history7 = h7;
+      seedDemoData(fresh);
       return fresh;
     }
+    const saved = JSON.parse(raw);
+    // fill in any new fields for users upgrading from an older version
+    const fresh = defaultState();
+    saved.settings = Object.assign(fresh.settings, saved.settings || {});
+    saved.periods = saved.periods || fresh.periods;
+    saved.mode = saved.mode || 'harian';
+    saved.transactions = saved.transactions || [];
     return saved;
   } catch { return defaultState(); }
 }
@@ -984,12 +1159,103 @@ function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+/* ── contoh transaksi awal (hanya dibuat sekali, saat pertama kali dibuka) ── */
+function seedDemoData(s) {
+  const dk = getDailyKey();
+  const items = [
+    { desc: 'Mie Ayam', amount: 10000, cat: 'makan' },
+    { desc: 'Listrik',  amount: 100000, cat: 'lainnya' },
+  ];
+  items.forEach(it => {
+    s.periods.harian.expense += it.amount;
+    s.transactions.unshift({
+      id: Date.now() + Math.random(),
+      type: 'expense',
+      amount: it.amount,
+      desc: it.desc,
+      cat: it.cat,
+      time: nowTime(),
+      dateKey: dk,
+      mode: 'harian',
+      periodKey: s.periods.harian.key,
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════
+   ROLLOVER (harian/mingguan/bulanan)
+═══════════════════════════════════════════ */
+function addTx({ type, amount, desc, cat = null, mode, periodKey, dateKey }) {
+  state.transactions.unshift({
+    id: Date.now() + Math.random(),
+    type, amount, desc, cat,
+    time: nowTime(),
+    dateKey, mode, periodKey,
+  });
+}
+
+function checkRollover() {
+  const dailyKey = getDailyKey();
+  const weekKey  = getWeekKey();
+  const monthKey = getMonthKey();
+  let changed = false;
+
+  // Mingguan: selalu reset otomatis saat minggu berganti
+  if (state.periods.mingguan.key !== weekKey) {
+    state.periods.mingguan = { key: weekKey, income: 0, expense: 0 };
+    changed = true;
+  }
+  // Bulanan: selalu reset otomatis saat bulan berganti
+  if (state.periods.bulanan.key !== monthKey) {
+    state.periods.bulanan = { key: monthKey, income: 0, expense: 0 };
+    changed = true;
+  }
+  // Harian
+  if (state.periods.harian.key !== dailyKey) {
+    const doAuto = state.settings.autoReset || state.settings.autoAllowance;
+    if (doAuto) {
+      const leftover = state.periods.harian.income - state.periods.harian.expense;
+
+      // Sisa saku harian (jika ada) dikembalikan ke saldo Bulanan
+      if (state.settings.autoAllowance && leftover > 0) {
+        state.periods.bulanan.income += leftover;
+        addTx({ type: 'income', amount: leftover, desc: 'Sisa Saku Harian Dikembalikan',
+          mode: 'bulanan', periodKey: state.periods.bulanan.key, dateKey: dailyKey });
+      }
+
+      state.periods.harian = { key: dailyKey, income: 0, expense: 0 };
+
+      // Isi otomatis saku harian dari saldo Bulanan
+      if (state.settings.autoAllowance) {
+        const poolBalance = state.periods.bulanan.income - state.periods.bulanan.expense;
+        const amt = Math.min(state.settings.dailyAmount || 0, Math.max(poolBalance, 0));
+        if (amt > 0) {
+          state.periods.bulanan.expense += amt;
+          state.periods.harian.income += amt;
+          addTx({ type: 'expense', amount: amt, desc: 'Transfer ke Saku Harian',
+            mode: 'bulanan', periodKey: state.periods.bulanan.key, dateKey: dailyKey });
+          addTx({ type: 'income', amount: amt, desc: 'Uang Saku Harian (Otomatis)',
+            mode: 'harian', periodKey: dailyKey, dateKey: dailyKey });
+        }
+      }
+    } else {
+      // autoReset & autoAllowance nonaktif: saldo tetap jalan, cuma perbarui key harinya
+      state.periods.harian.key = dailyKey;
+    }
+    changed = true;
+  }
+
+  if (changed) saveState();
+}
+
 /* ═══════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════ */
 function init() {
+  checkRollover();
   applyTheme(state.settings.theme);
   renderCategoryChips();
+  renderModeTabs();
   renderBalance();
   renderHistory();
   renderSettings();
@@ -1037,22 +1303,61 @@ function goTo(page) {
 }
 
 /* ═══════════════════════════════════════════
+   MODE TABS (Harian/Mingguan/Bulanan)
+═══════════════════════════════════════════ */
+function setMode(mode) {
+  state.mode = mode;
+  saveState();
+  renderModeTabs();
+  renderBalance();
+  renderHistory();
+  if (document.getElementById('page-chart').classList.contains('active')) {
+    renderCharts();
+  }
+}
+
+function renderModeTabs() {
+  document.querySelectorAll('.mode-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.mode === state.mode);
+  });
+  document.getElementById('modeTabs').style.display = state.settings.showModeTabs ? 'flex' : 'none';
+}
+
+function toggleMoreMenu() {
+  document.getElementById('moreMenu').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  const wrap = document.querySelector('.more-menu-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('moreMenu').classList.remove('open');
+  }
+});
+
+function toggleModeTabsVisibility() {
+  state.settings.showModeTabs = !state.settings.showModeTabs;
+  saveState();
+  renderModeTabs();
+  document.getElementById('modeTabsMenuLabel').textContent =
+    state.settings.showModeTabs ? 'Sembunyikan Tab Periode' : 'Tampilkan Tab Periode';
+  toggleMoreMenu();
+  toast(state.settings.showModeTabs ? 'Tab periode ditampilkan' : 'Tab periode disembunyikan');
+}
+
+/* ═══════════════════════════════════════════
    BALANCE & SAKU
 ═══════════════════════════════════════════ */
 function addSaku() {
-  const val = parseFloat(document.getElementById('sakuInput').value);
+  const val = parseFormatted(document.getElementById('sakuInput').value);
   if (!val || val <= 0) { toast('Masukkan nominal yang valid'); return; }
 
-  state.income += val;
-  state.transactions.unshift({
-    id: Date.now(),
-    type: 'income',
-    amount: val,
-    desc: 'Uang Saku',
-    cat: null,
-    time: nowTime()
+  const p = state.periods[state.mode];
+  p.income += val;
+  addTx({
+    type: 'income', amount: val, desc: 'Uang Saku',
+    mode: state.mode, periodKey: p.key, dateKey: TODAY_KEY,
   });
   document.getElementById('sakuInput').value = '';
+  document.getElementById('sakuInput').dispatchEvent(new Event('input'));
   saveState();
   renderBalance();
   renderHistory();
@@ -1060,12 +1365,15 @@ function addSaku() {
 }
 
 function renderBalance() {
-  const saldo = state.income - state.expense;
+  const p = state.periods[state.mode];
+  const saldo = p.income - p.expense;
   const el = document.getElementById('balanceDisplay');
   el.textContent = rupiah(saldo);
   el.className = 'balance-amount' + (saldo < 0 ? ' negative' : '');
-  document.getElementById('statIncome').textContent = rupiah(state.income);
-  document.getElementById('statExpense').textContent = rupiah(state.expense);
+  document.getElementById('statIncome').textContent = rupiah(p.income);
+  document.getElementById('statExpense').textContent = rupiah(p.expense);
+  document.getElementById('balanceLabel').textContent = MODE_LABELS[state.mode].balance;
+  document.getElementById('addSakuLabel').textContent = MODE_LABELS[state.mode].add;
 }
 
 /* ═══════════════════════════════════════════
@@ -1086,24 +1394,21 @@ function selectCat(id) {
 }
 
 function addExpense() {
-  const amount = parseFloat(document.getElementById('expInput').value);
+  const amount = parseFormatted(document.getElementById('expInput').value);
   const desc   = document.getElementById('expDesc').value.trim();
   if (!amount || amount <= 0) { toast('Masukkan nominal pengeluaran'); return; }
   if (!desc) { toast('Tambahkan keterangan'); return; }
 
-  const saldo = state.income - state.expense;
+  const p = state.periods[state.mode];
+  const saldo = p.income - p.expense;
   if (amount > saldo) {
     toast('⚠️ Saldo tidak cukup!');
   }
 
-  state.expense += amount;
-  state.transactions.unshift({
-    id: Date.now(),
-    type: 'expense',
-    amount,
-    desc,
-    cat: selectedCat,
-    time: nowTime()
+  p.expense += amount;
+  addTx({
+    type: 'expense', amount, desc, cat: selectedCat,
+    mode: state.mode, periodKey: p.key, dateKey: TODAY_KEY,
   });
 
   document.getElementById('expInput').value = '';
@@ -1119,14 +1424,20 @@ function addExpense() {
 /* ═══════════════════════════════════════════
    HISTORY
 ═══════════════════════════════════════════ */
+function currentPeriodTx() {
+  const p = state.periods[state.mode];
+  return state.transactions.filter(t => t.mode === state.mode && t.periodKey === p.key);
+}
+
 function renderHistory() {
   const list = document.getElementById('txList');
-  if (!state.transactions.length) {
-    list.innerHTML = `<div class="tx-empty"><i class="ph ph-receipt"></i>Belum ada transaksi hari ini</div>`;
+  const txs = currentPeriodTx();
+  if (!txs.length) {
+    list.innerHTML = `<div class="tx-empty"><i class="ph ph-receipt"></i>Belum ada transaksi ${MODE_LABELS[state.mode].reset}</div>`;
     return;
   }
 
-  list.innerHTML = state.transactions.map(tx => {
+  list.innerHTML = txs.map(tx => {
     const isIncome = tx.type === 'income';
     const cat = tx.cat ? CATEGORIES.find(c => c.id === tx.cat) : null;
     return `
@@ -1150,10 +1461,13 @@ function renderHistory() {
 }
 
 function clearHistory() {
-  if (!state.transactions.length) { toast('Riwayat sudah kosong'); return; }
-  state.transactions = [];
-  state.income = 0;
-  state.expense = 0;
+  const p = state.periods[state.mode];
+  const txs = currentPeriodTx();
+  if (!txs.length) { toast('Riwayat sudah kosong'); return; }
+  const ids = new Set(txs.map(t => t.id));
+  state.transactions = state.transactions.filter(t => !ids.has(t.id));
+  p.income = 0;
+  p.expense = 0;
   saveState();
   renderBalance();
   renderHistory();
@@ -1181,7 +1495,7 @@ function renderCharts() {
 
 function renderDonut() {
   const ctx = document.getElementById('donutChart').getContext('2d');
-  const expenses = state.transactions.filter(t => t.type === 'expense');
+  const expenses = currentPeriodTx().filter(t => t.type === 'expense');
 
   // Group by category
   const bycat = {};
@@ -1250,11 +1564,11 @@ function renderBar() {
     });
   }
 
-  const vals = days.map(d => {
-    if (d.key === TODAY_KEY) return state.expense;
-    const h = state.history7.find(h => h.date === d.key);
-    return h ? h.expense : 0;
-  });
+  const vals = days.map(d =>
+    state.transactions
+      .filter(t => t.type === 'expense' && t.dateKey === d.key)
+      .reduce((sum, t) => sum + t.amount, 0)
+  );
 
   if (barChart) barChart.destroy();
 
@@ -1295,8 +1609,8 @@ function renderBar() {
 
 function renderCatBreakdown() {
   const wrap = document.getElementById('catBreakdown');
-  const expenses = state.transactions.filter(t => t.type === 'expense');
-  const total = state.expense || 1;
+  const expenses = currentPeriodTx().filter(t => t.type === 'expense');
+  const total = state.periods[state.mode].expense || 1;
 
   const bycat = {};
   CATEGORIES.forEach(c => { bycat[c.id] = 0; });
@@ -1342,26 +1656,58 @@ function renderCatBreakdown() {
 function renderSettings() {
   const arToggle = document.getElementById('autoResetToggle');
   arToggle.classList.toggle('on', state.settings.autoReset);
+
+  const aaToggle = document.getElementById('autoAllowanceToggle');
+  aaToggle.classList.toggle('on', state.settings.autoAllowance);
+
+  const panel = document.getElementById('dailyAmountPanel');
+  panel.style.display = state.settings.autoAllowance ? 'flex' : 'none';
+
+  const input = document.getElementById('dailyAmountInput');
+  if (document.activeElement !== input) {
+    input.value = state.settings.dailyAmount ? state.settings.dailyAmount.toLocaleString('id-ID') : '';
+  }
+
+  const poolBalance = state.periods.bulanan.income - state.periods.bulanan.expense;
+  document.getElementById('poolReadout').textContent = rupiah(poolBalance);
+
+  document.getElementById('modeTabsMenuLabel').textContent =
+    state.settings.showModeTabs ? 'Sembunyikan Tab Periode' : 'Tampilkan Tab Periode';
+}
+
+function toggleAutoAllowance() {
+  state.settings.autoAllowance = !state.settings.autoAllowance;
+  renderSettings();
+  saveState();
+  toast(state.settings.autoAllowance ? 'Isi otomatis saku harian aktif' : 'Isi otomatis saku harian nonaktif');
+}
+
+function setDailyAmount() {
+  const val = parseFormatted(document.getElementById('dailyAmountInput').value);
+  if (!val || val <= 0) { toast('Masukkan nominal yang valid'); return; }
+  state.settings.dailyAmount = val;
+  saveState();
+  renderSettings();
+  toast('Nominal saku harian disimpan ✓');
 }
 
 /* ═══════════════════════════════════════════
    RESET MODAL
 ═══════════════════════════════════════════ */
 function openResetModal() {
+  document.getElementById('resetModal').querySelector('.modal-sub').textContent =
+    `Semua data ${MODE_LABELS[state.mode].reset} (saldo, pengeluaran, riwayat) untuk tab ini akan dihapus permanen dan tidak bisa dikembalikan.`;
   document.getElementById('resetModal').classList.add('open');
 }
 function closeResetModal() {
   document.getElementById('resetModal').classList.remove('open');
 }
 function confirmReset() {
-  const h7 = state.history7 || [];
-  h7.push({ date: state.date, expense: state.expense });
-  if (h7.length > 7) h7.shift();
-
-  const settings = state.settings;
-  state = defaultState();
-  state.settings = settings;
-  state.history7 = h7;
+  const mode = state.mode;
+  const p = state.periods[mode];
+  state.transactions = state.transactions.filter(t => !(t.mode === mode && t.periodKey === p.key));
+  p.income = 0;
+  p.expense = 0;
   saveState();
 
   closeResetModal();
@@ -1375,10 +1721,10 @@ function confirmReset() {
 ═══════════════════════════════════════════ */
 function exportCSV() {
   if (!state.transactions.length) { toast('Tidak ada data untuk diekspor'); return; }
-  const rows = [['Waktu','Tipe','Deskripsi','Kategori','Nominal']];
+  const rows = [['Tanggal','Waktu','Mode','Tipe','Deskripsi','Kategori','Nominal']];
   state.transactions.forEach(t => {
     const cat = t.cat ? CATEGORIES.find(c => c.id === t.cat)?.label : '-';
-    rows.push([t.time, t.type === 'income' ? 'Pemasukan' : 'Pengeluaran', t.desc, cat || '-', t.amount]);
+    rows.push([t.dateKey || '-', t.time, t.mode || '-', t.type === 'income' ? 'Pemasukan' : 'Pengeluaran', t.desc, cat || '-', t.amount]);
   });
   const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1412,6 +1758,35 @@ function toast(msg) {
 }
 
 /* ═══════════════════════════════════════════
+   FORMATTED NUMBER INPUT
+═══════════════════════════════════════════ */
+
+// Parse "3.000.000" → 3000000
+function parseFormatted(str) {
+  return parseFloat((str || '').replace(/\./g, '').replace(/,/g, '.')) || 0;
+}
+
+// Format 3000000 → "3.000.000"
+function formatNumber(str) {
+  const digits = str.replace(/\D/g, '');           // strip non-digits
+  if (!digits) return '';
+  return parseInt(digits, 10).toLocaleString('id-ID');
+}
+
+// Attach live formatter to a text input
+function attachFormatter(inputId) {
+  const el = document.getElementById(inputId);
+  el.addEventListener('input', function() {
+    const pos    = this.selectionStart;
+    const before = this.value.length;
+    this.value   = formatNumber(this.value);
+    // Reposition cursor accounting for added dots
+    const diff = this.value.length - before;
+    this.setSelectionRange(pos + diff, pos + diff);
+  });
+}
+
+/* ═══════════════════════════════════════════
    ENTER KEY SUPPORT
 ═══════════════════════════════════════════ */
 document.getElementById('sakuInput').addEventListener('keydown', e => {
@@ -1426,6 +1801,14 @@ document.getElementById('expDesc').addEventListener('keydown', e => {
 ═══════════════════════════════════════════ */
 document.getElementById('resetModal').addEventListener('click', function(e) {
   if (e.target === this) closeResetModal();
+});
+
+// Attach formatted inputs
+attachFormatter('sakuInput');
+attachFormatter('expInput');
+attachFormatter('dailyAmountInput');
+document.getElementById('dailyAmountInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') setDailyAmount();
 });
 
 // BOOT
