@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>My Saku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ── TOPBAR ── -->
+  <div class="topbar">
+    <div class="topbar-logo">My<span>Saku</span></div>
+    <div class="topbar-actions">
+      <button class="icon-btn" onclick="openResetModal()" title="Reset">
+        <i class="ph ph-arrows-clockwise"></i>
+      </button>
+      <button class="icon-btn" onclick="goTo('settings')" title="Pengaturan">
+        <i class="ph ph-gear-six"></i>
+      </button>
+      <div class="more-menu-wrap">
+        <button class="icon-btn" onclick="toggleMoreMenu()" title="Lainnya">
+          <i class="ph ph-dots-three-vertical"></i>
+        </button>
+        <div class="dropdown-menu" id="moreMenu">
+          <div class="dropdown-item" onclick="toggleModeTabsVisibility()">
+            <i class="ph ph-eye"></i>
+            <span id="modeTabsMenuLabel">Sembunyikan Tab Periode</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONTENT ── -->
+  <div class="content">
+
+    <!-- PAGE: HOME -->
+    <div class="page active" id="page-home">
+
+      <!-- Mode Tabs -->
+      <div class="mode-tabs" id="modeTabs">
+        <button class="mode-tab active" data-mode="harian" onclick="setMode('harian')">Harian</button>
+        <button class="mode-tab" data-mode="mingguan" onclick="setMode('mingguan')">Mingguan</button>
+        <button class="mode-tab" data-mode="bulanan" onclick="setMode('bulanan')">Bulanan</button>
+      </div>
+
+      <!-- Balance Card -->
+      <div class="balance-card">
+        <div class="balance-label" id="balanceLabel">Saldo Hari Ini</div>
+        <div class="balance-amount" id="balanceDisplay">Rp 0</div>
+        <div class="balance-date" id="balanceDate"></div>
+        <div class="balance-stats">
+          <div class="stat-box">
+            <div class="stat-box-label">💰 Uang Saku</div>
+            <div class="stat-box-val in" id="statIncome">Rp 0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-label">🛒 Pengeluaran</div>
+            <div class="stat-box-val out" id="statExpense">Rp 0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Saku -->
+      <div>
+        <div class="section-label" style="margin-bottom:10px;" id="addSakuLabel">Tambah Uang Saku</div>
+        <div class="saku-input-row">
+          <div class="amount-input-wrap">
+            <span class="amount-prefix">Rp</span>
+            <input type="text" id="sakuInput" placeholder="0" inputmode="numeric" autocomplete="off"/>
+          </div>
+          <button class="btn-add-saku" onclick="addSaku()" title="Tambah Saku">
+            <i class="ph ph-plus"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Add Expense -->
+      <div class="card">
+        <div class="section-label" style="margin-bottom:12px;">Catat Pengeluaran</div>
+        <div class="expense-form">
+          <!-- Nominal -->
+          <div class="amount-input-wrap" style="border-radius:12px;">
+            <span class="amount-prefix">Rp</span>
+            <input type="text" id="expInput" placeholder="0" inputmode="numeric" autocomplete="off"/>
+          </div>
+          <!-- Deskripsi -->
+          <div class="input-field">
+            <i class="ph ph-pencil-simple"></i>
+            <input type="text" id="expDesc" placeholder="Keterangan (contoh: makan siang)" maxlength="40"/>
+          </div>
+          <!-- Kategori chips -->
+          <div class="chips" id="catChips"></div>
+          <!-- Submit -->
+          <button class="btn-expense" onclick="addExpense()">
+            <i class="ph ph-minus-circle"></i> Pengeluaran
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PAGE: HISTORY -->
+    <div class="page" id="page-history">
+      <div class="history-header">
+        <div class="section-label">Riwayat Transaksi</div>
+        <button class="btn-clear" onclick="clearHistory()">Hapus Semua</button>
+      </div>
+      <div class="card">
+        <div class="tx-list" id="txList">
+          <div class="tx-empty">
+            <i class="ph ph-receipt"></i>
+            Belum ada transaksi hari ini
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: CHART -->
+    <div class="page" id="page-chart">
+      <div class="section-label">Grafik Pengeluaran</div>
+
+      <!-- Donut chart -->
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:12px;">Distribusi Per Kategori</div>
+        <div class="chart-wrap">
+          <canvas id="donutChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Bar chart 7 hari -->
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:12px;">Tren Pengeluaran 7 Hari</div>
+        <div class="chart-wrap">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Category breakdown -->
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:12px;">Rincian Kategori</div>
+        <div id="catBreakdown"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="section-label">Pengaturan</div>
+      <div class="card">
+
+        <!-- Dark mode toggle -->
+        <div class="settings-item" onclick="toggleTheme()">
+          <div class="settings-left">
+            <div class="settings-icon"><i class="ph ph-moon"></i></div>
+            <div>
+              <div class="settings-label">Mode Gelap</div>
+              <div class="settings-sub">Ganti tampilan terang/gelap</div>
+            </div>
+          </div>
+          <div class="toggle" id="themeToggle"></div>
+        </div>
+
+        <!-- Auto reset -->
+        <div class="settings-item" onclick="toggleAutoReset()">
+          <div class="settings-left">
+            <div class="settings-icon"><i class="ph ph-arrows-clockwise"></i></div>
+            <div>
+              <div class="settings-label">Reset Otomatis</div>
+              <div class="settings-sub">Saldo & catatan direset setiap hari baru</div>
+            </div>
+          </div>
+          <div class="toggle" id="autoResetToggle"></div>
+        </div>
+
+        <!-- Auto allowance -->
+        <div class="settings-item" onclick="toggleAutoAllowance()">
+          <div class="settings-left">
+            <div class="settings-icon"><i class="ph ph-coin"></i></div>
+            <div>
+              <div class="settings-label">Isi Otomatis Saku Harian</div>
+              <div class="settings-sub">Ambil dari saldo Bulanan tiap hari, sisa dikembalikan</div>
+            </div>
+          </div>
+          <div class="toggle" id="autoAllowanceToggle"></div>
+        </div>
+
+        <!-- Nominal harian (only shown when autoAllowance is on) -->
+        <div class="settings-subpanel" id="dailyAmountPanel" style="display:none;padding-top:14px;">
+          <div class="settings-sub" style="margin:0 0 2px;">Nominal saku harian otomatis</div>
+          <div class="amount-input-wrap" style="border-radius:12px;">
+            <span class="amount-prefix">Rp</span>
+            <input type="text" id="dailyAmountInput" placeholder="100.000" inputmode="numeric" autocomplete="off"/>
+          </div>
+          <button class="btn-mini" style="width:100%;" onclick="setDailyAmount()">Simpan</button>
+          <div class="settings-pool-readout">
+            Sisa saldo Bulanan (sumber saku harian): <b id="poolReadout">Rp 0</b>
+          </div>
+        </div>
+
+        <!-- Export CSV -->
+        <div class="settings-item" onclick="exportCSV()">
+          <div class="settings-left">
+            <div class="settings-icon"><i class="ph ph-upload-simple"></i></div>
+            <div>
+              <div class="settings-label">Ekspor Riwayat</div>
+              <div class="settings-sub">Unduh catatan sebagai file CSV</div>
+            </div>
+          </div>
+          <i class="ph ph-caret-right" style="color:var(--text-3)"></i>
+        </div>
+
+        <!-- Reset manual -->
+        <div class="settings-item" onclick="openResetModal()" style="border-bottom:none;">
+          <div class="settings-left">
+            <div class="settings-icon" style="background:var(--danger-bg);color:var(--danger)">
+              <i class="ph ph-trash"></i>
+            </div>
+            <div>
+              <div class="settings-label" style="color:var(--danger)" id="resetItemLabel">Reset Saldo Hari Ini</div>
+              <div class="settings-sub" id="resetItemSub">Hapus semua data hari ini</div>
+            </div>
+          </div>
+          <i class="ph ph-caret-right" style="color:var(--text-3)"></i>
+        </div>
+
+      </div>
+
+      <!-- App info -->
+      <div style="text-align:center;padding:8px 0;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-1);">My Saku</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:4px;">v1.0 · Catat sakumu, kelola hidupmu 🎒</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- ── BOTTOM NAV ── -->
+  <div class="bottom-nav">
+    <button class="nav-tab active" id="tab-home" onclick="goTo('home')" title="Beranda">
+      <i class="ph ph-house-simple"></i>
+    </button>
+    <button class="nav-tab" id="tab-history" onclick="goTo('history')" title="Riwayat">
+      <i class="ph ph-clock-clockwise"></i>
+    </button>
+    <button class="nav-tab" id="tab-chart" onclick="goTo('chart')" title="Grafik">
+      <i class="ph ph-chart-pie-slice"></i>
+    </button>
+    <button class="nav-tab" id="tab-settings" onclick="goTo('settings')" title="Pengaturan">
+      <i class="ph ph-gear-six"></i>
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Reset Modal -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="resetModalTitle">Reset Saldo Hari Ini?</div>
+    <div class="modal-sub">Semua data hari ini (saldo, pengeluaran, riwayat) akan dihapus permanen dan tidak bisa dikembalikan.</div>
+    <div class="modal-actions">
+      <button class="btn-modal btn-modal-cancel" onclick="closeResetModal()">Batal</button>
+      <button class="btn-modal btn-modal-danger" onclick="confirmReset()">Ya, Reset</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
