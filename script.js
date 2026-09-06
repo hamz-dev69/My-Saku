@@ -779,3 +779,10 @@ document.getElementById('dailyAmountInput').addEventListener('keydown', e => {
 
 // BOOT
 init();
+
+// Daftarkan service worker (biar app bisa di-install & tetap kebuka offline)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
