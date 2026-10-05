@@ -251,8 +251,17 @@ function toggleAutoReset() {
 function goTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav-btn').forEach(t => t.classList.remove('active'));
+
   document.getElementById('page-' + page).classList.add('active');
-  document.getElementById('tab-' + page).classList.add('active');
+
+  // Bottom nav (mobile)
+  const tabEl = document.getElementById('tab-' + page);
+  if (tabEl) tabEl.classList.add('active');
+
+  // Sidebar nav (desktop)
+  const sideEl = document.getElementById('sidebar-' + page);
+  if (sideEl) sideEl.classList.add('active');
 
   if (page === 'chart') {
     setTimeout(renderCharts, 80);

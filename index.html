@@ -24,19 +24,37 @@
 <body>
 <div id="app">
 
-  <!-- ── TOPBAR ── -->
+  <!-- ── TOPBAR (mobile) / SIDEBAR (desktop) ── -->
   <div class="topbar">
     <div class="topbar-logo">My<span>Saku</span></div>
     <div class="topbar-actions">
+
+      <!-- Desktop sidebar nav (hidden on mobile via CSS) -->
+      <button class="icon-btn sidebar-nav-btn active" id="sidebar-home"     onclick="goTo('home')"     title="Beranda">
+        <i class="ph ph-house-simple"></i> <span class="sidebar-label">Beranda</span>
+      </button>
+      <button class="icon-btn sidebar-nav-btn" id="sidebar-history"  onclick="goTo('history')"  title="Riwayat">
+        <i class="ph ph-clock-clockwise"></i> <span class="sidebar-label">Riwayat</span>
+      </button>
+      <button class="icon-btn sidebar-nav-btn" id="sidebar-chart"    onclick="goTo('chart')"    title="Grafik">
+        <i class="ph ph-chart-pie-slice"></i> <span class="sidebar-label">Grafik</span>
+      </button>
+      <button class="icon-btn sidebar-nav-btn" id="sidebar-settings" onclick="goTo('settings')" title="Pengaturan">
+        <i class="ph ph-gear-six"></i> <span class="sidebar-label">Pengaturan</span>
+      </button>
+
+      <!-- Divider (desktop only) -->
+      <div class="sidebar-divider"></div>
+
+      <!-- Actions -->
       <button class="icon-btn" onclick="openResetModal()" title="Reset">
-        <i class="ph ph-arrows-clockwise"></i>
+        <i class="ph ph-arrows-clockwise"></i> <span class="sidebar-label">Reset</span>
       </button>
-      <button class="icon-btn" onclick="goTo('settings')" title="Pengaturan">
-        <i class="ph ph-gear-six"></i>
-      </button>
+
+      <!-- More menu -->
       <div class="more-menu-wrap">
         <button class="icon-btn" onclick="toggleMoreMenu()" title="Lainnya">
-          <i class="ph ph-dots-three-vertical"></i>
+          <i class="ph ph-dots-three-vertical"></i> <span class="sidebar-label">Lainnya</span>
         </button>
         <div class="dropdown-menu" id="moreMenu">
           <div class="dropdown-item" onclick="toggleModeTabsVisibility()">
@@ -45,6 +63,7 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 

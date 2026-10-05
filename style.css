@@ -8,7 +8,11 @@
   --radius-lg: 24px;
   --radius-xl: 32px;
   --transition: 0.25s cubic-bezier(.4,0,.2,1);
-  --max-w: 420px;
+
+  /* Layout */
+  --max-w:       420px;    /* mobile card width */
+  --sidebar-w:   220px;    /* desktop sidebar */
+  --content-max: 860px;    /* max content width on desktop */
 }
 
 /* DARK */
@@ -67,6 +71,8 @@ body {
   overflow-x: hidden;
   transition: background var(--transition), color var(--transition);
 }
+
+/* ── Mobile default: single column card ── */
 #app {
   width: 100%;
   max-width: var(--max-w);
@@ -790,7 +796,279 @@ body {
 }
 .settings-pool-readout b { color: var(--text-1); font-size: 13px; }
 
+/* ── Sidebar nav labels (hidden on mobile) ── */
+.sidebar-label { display: none; }
+.sidebar-divider { display: none; }
+.sidebar-nav-btn { display: none; } /* hidden on mobile — bottom nav is used */
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — ADAPTIVE LAYOUT
+═══════════════════════════════════════════ */
+
+/* ── Elevated card on medium+ screens ── */
 @media (min-width: 421px) {
   body { background: var(--bg-input); }
-  #app { box-shadow: var(--shadow); }
+  #app  { box-shadow: var(--shadow); }
+}
+
+/* ── Tablet (≥ 700px): widen content ── */
+@media (min-width: 700px) {
+  #app {
+    max-width: 680px;
+  }
+
+  /* Balance card: side-by-side stats */
+  .balance-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Home: side-by-side add-saku & expense form */
+  #page-home > div:not(.mode-tabs):not(.balance-card) {
+    display: grid;
+    grid-template-columns: 1fr ;
+    gap: 16px;
+    align-items: start;
+  }
+
+  /* Chart page: charts side by side */
+  #page-chart {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  #page-chart > .section-label {
+    grid-column: 1 / -1;
+  }
+  #page-chart > .card:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* History: wider tx rows */
+  .tx-item { padding: 14px 18px; }
+
+  /* Chips wrap nicer */
+  .chips { gap: 8px; }
+}
+
+/* ── Desktop/Laptop (≥ 1024px): sidebar layout ── */
+@media (min-width: 1024px) {
+  body {
+    background: var(--bg-input);
+    align-items: flex-start;
+    justify-content: center;
+    padding: 0;
+  }
+
+  #app {
+    max-width: 100%;
+    width: 100%;
+    min-height: 100vh;
+    flex-direction: row;
+    box-shadow: none;
+    background: transparent;
+    gap: 0;
+  }
+
+  /* ── Sidebar: topbar becomes left rail ── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    height: 100vh;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 32px 20px;
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+    gap: 0;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+  .topbar-logo {
+    font-size: 22px;
+    margin-bottom: 32px;
+    width: 100%;
+  }
+  .topbar-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 4px;
+  }
+  .topbar-actions .icon-btn {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+  }
+  .topbar-actions .icon-btn::after {
+    display: none;
+  }
+  .more-menu-wrap {
+    width: 100%;
+  }
+  .dropdown-menu {
+    left: 0;
+    top: 44px;
+    right: auto;
+    width: 100%;
+  }
+
+  /* ── Sidebar nav labels ── */
+  .sidebar-label  { display: inline; font-size: 14px; font-weight: 600; }
+  .sidebar-nav-btn { display: flex; }
+  .sidebar-divider {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin: 8px 0;
+  }
+  .sidebar-nav-btn.active {
+    color: var(--text-1);
+    background: var(--accent-bg);
+  }
+
+  /* ── Bottom nav becomes sidebar nav ── */
+  .bottom-nav {
+    position: sticky;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    height: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0 20px 32px;
+    background: var(--bg);
+    border-top: none;
+    border-right: 1px solid var(--border);
+    gap: 4px;
+    /* stick to bottom of sidebar */
+    margin-top: auto;
+    order: -1; /* rendered before content but after topbar via flex column trick */
+  }
+
+  /* Put topbar + bottom-nav in a fixed left column */
+  #app {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) 1fr;
+    grid-template-rows: 1fr;
+    grid-template-areas:
+      "sidebar content";
+  }
+  .topbar       { grid-area: sidebar; height: 100vh; flex-direction: column; justify-content: space-between; }
+  .bottom-nav   { display: none; } /* hide mobile nav; topbar IS the nav on desktop */
+  .content      { grid-area: content; overflow-y: auto; }
+
+  /* Nav tabs as sidebar links */
+  .topbar-actions .icon-btn {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Make sidebar nav items look like links */
+  .topbar-actions {
+    flex: 1;
+    justify-content: flex-start;
+  }
+
+  /* Content area */
+  .content {
+    background: var(--bg-input);
+    min-height: 100vh;
+    padding: 0;
+  }
+  .page {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 32px 40px 48px;
+  }
+
+  /* Home page: 2-col layout */
+  #page-home {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    gap: 20px;
+    align-items: start;
+  }
+  .mode-tabs {
+    grid-column: 1 / -1;
+  }
+  .balance-card {
+    grid-column: 1 / -1;
+  }
+  #page-home > div:nth-child(3) { /* add saku */
+    grid-column: 1;
+  }
+  #page-home > .card { /* expense form */
+    grid-column: 2;
+  }
+
+  /* Chart page: 2-col grid */
+  #page-chart {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  #page-chart > .section-label {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+  }
+  #page-chart > .card:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* History & Settings: single wide column */
+  #page-history,
+  #page-settings {
+    max-width: 100%;
+  }
+
+  /* Balance stats row */
+  .balance-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Cards */
+  .card { border-radius: var(--radius-lg); }
+
+  /* Modals stay centered */
+  .modal-overlay { align-items: center; }
+  .modal-sheet   { border-radius: var(--radius-lg); max-width: 480px; }
+}
+
+/* ── Large desktop (≥ 1280px): more breathing room ── */
+@media (min-width: 1280px) {
+  :root { --sidebar-w: 240px; --content-max: 100%; }
+
+  .page { padding: 40px 56px 64px; }
+
+  .topbar-logo { font-size: 24px; }
+}
+
+/* ═══ PAKSA HOME: tambah saku ATAS, pengeluaran BAWAH (1 kolom) ═══ */
+@media (min-width: 700px) {
+  #page-home {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+    grid-template-columns: none !important;
+  }
 }
